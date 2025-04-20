@@ -56,4 +56,37 @@ export class Taxi {
 
         return await this.query(sql);
     }
+
+    async runs_per_day(limit: number | undefined = undefined) {
+      if (!this.db || !this.conn)  // Check if db and conn are initialized
+        throw new Error('Database not initialized. Please call init() first.');
+
+      const sql = `
+            SELECT
+              date_part('day', lpep_pickup_datetime) AS day,
+              COUNT(*) AS runs
+            FROM ${this.table}
+            GROUP BY day
+            LIMIT ${limit}
+          `;
+
+        return await this.query(sql);
+    }
+
+    async mean_value_per_day(limit: number | undefined = undefined) {
+      if (!this.db || !this.conn)
+        throw new Error('Database not initialized. Please call init() first.');
+
+      const sql = `
+            SELECT
+              date_part('day', lpep_pickup_datetime) AS day,
+              AVG(total_amount) AS mean_value
+            FROM ${this.table}
+            GROUP BY day
+            LIMIT ${limit}
+          `;
+
+        return await this.query(sql);
+
+    }
 }
