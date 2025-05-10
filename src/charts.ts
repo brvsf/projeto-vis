@@ -43,6 +43,9 @@ export async function scatterPlot(
   console.log(maxDistance, minDistance, maxTip, minTip);
 
   // Append the axes
+  g.selectAll('.x-axis').remove();
+  g.selectAll('.y-axis').remove(); // Remove existing axes
+
   g.append('g')
     .attr('class', 'x-axis')
     .attr('transform', `translate(0, ${height})`)

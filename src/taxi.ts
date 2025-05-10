@@ -66,11 +66,10 @@ export class Taxi {
         SELECT
           trip_distance,
           tip_amount,
-          TO_TIMESTAMP(EXTRACT(EPOCH FROM lpep_pickup_datetime) / 1000) AS pickup_datetime
         FROM ${this.table}
         WHERE ('${start_date}' IS NULL OR lpep_pickup_datetime >= '${start_date}')
           AND ('${end_date}' IS NULL OR lpep_pickup_datetime <= '${end_date}')
-        LIMIT ${limit || 100}
+        LIMIT ${limit || 1000}
       `;
 
         return await this.query(sql);

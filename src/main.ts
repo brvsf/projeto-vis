@@ -37,11 +37,12 @@ async function main() {
       }
 
       // Query the database for trip distance and tip amount
-      const data = await taxi.trip_distance_per_tip_amount(
-          10000,
+      let data = await taxi.trip_distance_per_tip_amount(
+          20000,
           currentStartDate,
           currentEndDate
       );
+      data = data.filter(d => d.trip_distance >= 0 && d.tip_amount >= 0);
 
       // Plot the data using the scatter plot function
       await scatterPlot(data);
