@@ -27,8 +27,11 @@ async function main() {
 
       // Get the start and end dates from the input fields if they exist
       // If they don't exist, use default values
-      const currentStartDate = (startDate as HTMLInputElement).value || '2023-01-01'; //
-      const currentEndDate = (endDate as HTMLInputElement).value || '2023-01-31';
+      const currentStartDate = (startDate as HTMLInputElement).value || '2023-01-01 00:00:00'; //
+      const currentEndDate = (endDate as HTMLInputElement).value || '2023-01-31 00:00:00';
+
+      console.log('Start Date', currentStartDate);
+      console.log('End Date', currentEndDate);
 
       // If the start date is greater than the end date, show an error message
       if (new Date(currentStartDate) > new Date(currentEndDate)) {
@@ -38,7 +41,7 @@ async function main() {
 
       // Query the database for trip distance and tip amount
       let data = await taxi.trip_distance_per_tip_amount(
-          20000,
+          null,
           currentStartDate,
           currentEndDate
       );
@@ -46,7 +49,11 @@ async function main() {
 
       // Plot the data using the scatter plot function
       await scatterPlot(data);
+
+      // Logs
       console.log('Data', data);
+      console.log('Start Date After', currentStartDate);
+      console.log('End Date After', currentEndDate);
   });
 
     clearBtn.addEventListener('click', async () => {
@@ -54,10 +61,7 @@ async function main() {
     });
 
     // Logs
-    console.log('Load button:', loadBtn);
-    console.log('Clear button:', clearBtn);
-    console.log('Start date input:', startDate);
-    console.log('End date input:', endDate);
+
 }
 
 window.onload = () => {

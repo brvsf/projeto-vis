@@ -62,16 +62,32 @@ export class Taxi {
       if (!this.db || !this.conn)
         throw new Error('Database not initialized. Please call init() first.');
 
-      const sql = `
-        SELECT
-          trip_distance,
-          tip_amount,
-        FROM ${this.table}
-        WHERE ('${start_date}' IS NULL OR lpep_pickup_datetime >= '${start_date}')
-          AND ('${end_date}' IS NULL OR lpep_pickup_datetime <= '${end_date}')
-        LIMIT ${limit || 1000}
-      `;
+      let sql = '';
+      if (!limit) {
+        sql = `
+          SELECT
+            trip_distance,
+            tip_amount,
+            lpep_pickup_datetime,
+          FROM ${this.table}
+          WHERE ('${start_date}' IS NULL OR lpep_pickup_datetime >= '${start_date}')
+            AND ('${end_date}' IS NULL OR lpep_pickup_datetime <= '${end_date}')
+          ORDER BY lpep_pickup_datetime DESC
+          `;
+       } else {
 
+        sql = `
+          SELECT
+            trip_distance,
+            tip_amount,
+            lpep_pickup_datetime,
+          FROM ${this.table}
+          WHERE ('${start_date}' IS NULL OR lpep_pickup_datetime >= '${start_date}')
+            AND ('${end_date}' IS NULL OR lpep_pickup_datetime <= '${end_date}')
+          ORDER BY lpep_pickup_datetime DESC
+          LIMIT ${limit || 1000}
+      `;
+      }
         return await this.query(sql);
     }
 
