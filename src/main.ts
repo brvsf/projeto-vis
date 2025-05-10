@@ -17,21 +17,7 @@ async function main() {
     const startDate = document.querySelector('#startDate');
     const endDate = document.querySelector('#endDate');
 
-    let start_date = '2023-01-01';
-    let end_date = '2023-01-31';
-
-    startDate?.addEventListener('change', async (e) => {
-        const target = e.target as HTMLInputElement;
-        start_date = target.value;
-    }
-    );
-
-    endDate?.addEventListener('change', async (e) => {
-        const target = e.target as HTMLInputElement;
-        end_date = target.value;
-    }
-    );
-
+    // Add event listener to load and clear buttons
     if (!loadBtn || !clearBtn) {
         return;
     }
@@ -39,7 +25,9 @@ async function main() {
     loadBtn.addEventListener('click', async () => {
       clearChart();
 
-      const currentStartDate = (startDate as HTMLInputElement).value || '2023-01-01';
+      // Get the start and end dates from the input fields if they exist
+      // If they don't exist, use default values
+      const currentStartDate = (startDate as HTMLInputElement).value || '2023-01-01'; //
       const currentEndDate = (endDate as HTMLInputElement).value || '2023-01-31';
 
       const data = await taxi.trip_distance_per_tip_amount(
@@ -55,7 +43,6 @@ async function main() {
     clearBtn.addEventListener('click', async () => {
         clearChart();
     });
-
 
     // Logs
     console.log('Load button:', loadBtn);
