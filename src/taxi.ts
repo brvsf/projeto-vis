@@ -10,6 +10,7 @@ export class Taxi {
     private color = "green";
     private table = 'taxi_2023';
 
+    // This function is used to initialize the database connection and create a connection to the database
     async init() {
         this.db = await loadDb();
         this.conn = await this.db.connect();
@@ -17,6 +18,7 @@ export class Taxi {
 
     private tableLoaded = false;
 
+    // This function is used to load the taxi data from the database
     async loadTaxi(months: number = 1) {
         if (!this.db || !this.conn)
             throw new Error('Database not initialized. Please call init() first.');
@@ -46,6 +48,7 @@ export class Taxi {
         this.tableLoaded = true;
     }
 
+    // This function is used to load the data from the database and return it as an array of objects
     async query(sql: string) {
         if (!this.db || !this.conn)
             throw new Error('Database not initialized. Please call init() first.');
@@ -54,6 +57,7 @@ export class Taxi {
         return result.toArray().map(row => row.toJSON());
     }
 
+    // This function is used to get the trip distance and tip amount from the database
     async trip_distance_per_tip_amount(limit: number | undefined = undefined, start_date: string | undefined = null, end_date: string | undefined = null) {
       if (!this.db || !this.conn)
         throw new Error('Database not initialized. Please call init() first.');

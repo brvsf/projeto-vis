@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-export async function loadChart(
+export async function scatterPlot(
   data: {
     trip_distance: number;
     tip_amount: number
@@ -39,6 +39,8 @@ export async function loadChart(
 
   const circles = g.selectAll('circle')
     .data(data, (d: { trip_distance: number; tip_amount: number }) => `${d.trip_distance}-${d.tip_amount}`);
+
+  console.log(maxDistance, minDistance, maxTip, minTip);
 
   // Append the axes
   g.append('g')
