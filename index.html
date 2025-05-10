@@ -1,24 +1,24 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<head>
+    <meta charset="UTF-8">
+    <title>Carregamento dos Dados</title>
     <link rel="stylesheet" href="index.css">
-    <title>Titulo do Projeto</title>
-  </head>
-  <body>
-    <div id="app">
-        <h1>Titulo do Projeto</h1>
-        <h2>Loaded using DuckDB</h2>
+</head>
 
-        <h3>Digite algo:</h3>
-        <input type="text" id="entradaTexto" placeholder="Digite aqui..." />
-        <button id="botaoEnviar">Carregar</button>
-        <div id="resultado"></div>
-
-        <div id="table"></div>
+<body>
+    <div class="main-container">
+        <svg>
+            <g id="group"></g>
+        </svg>
+        <div class="buttom-container">
+            <button id="loadBtn">Load Chart</button>
+            <button id="clearBtn">Clear Chart</button>
+        </div>
     </div>
-    <script type="module" src="/src/main.ts"></script>
 
-  </body>
+    <script type="module" src="src/main.ts"></script>
+</body>
+
 </html>
