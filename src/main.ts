@@ -7,7 +7,7 @@ async function main() {
 
     // Initialize the taxi database
     await taxi.init();
-    await taxi.loadTaxi();
+    await taxi.loadTaxi(12);
 
     // Initializing load and clear buttons
     const loadBtn  = document.querySelector('#loadBtn');
