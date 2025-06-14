@@ -6,34 +6,33 @@
   <link rel="stylesheet" href="index.css" />
 </head>
 <body>
-  <div class="buttom-container">
-    <button id="question1">Dias da Semana</button>
-    <button id="question2">Gorjeta x Hora</button>
-  </div>
+  <div class="page-layout">
+    <!-- Botões à esquerda -->
+    <div class="buttom-container">
+      <button id="question1">Dias da Semana</button>
+      <button id="question2">Gorjeta x Hora</button>
+    </div>
 
-  <div class="main-layout">
-    <div class="left-column">
-      <div class="main-container">
-        <svg>
-          <g id="group"></g>
-        </svg>
-      </div>
-      <div class="container-2">
-        <div class="subchart">
-          <svg>
-            <g id="bottom-chart"></g>
-          </svg>
+    <!-- Resto do conteúdo -->
+    <div class="content-wrapper">
+      <div class="main-layout">
+        <!-- Mapa -->
+        <div class="left-column">
+          <svg id="map-svg"><g id="group"></g></svg>
+        </div>
+
+        <!-- Gráficos menores -->
+        <div class="right-column">
+          <div class="small-chart"><svg><g id="chart1"></g></svg></div>
+          <div class="small-chart"><svg><g id="chart2"></g></svg></div>
+          <div class="small-chart"><svg><g id="chart3"></g></svg></div>
         </div>
       </div>
-    </div>
 
-    <div class="right-chart">
-      <svg>
-        <g id="full-right"></g>
-      </svg>
-      <div class="container-2"></div>
+      <!-- Gráfico horizontal -->
+      <div class="bottom-layout">
+        <svg id="bottom-chart-svg"><g id="bottom-chart"></g></svg>
+      </div>
     </div>
-
-    <script type="module" src="src/main.js"></script>
-    </body>
-    </html>
+  </div>
+</body>
