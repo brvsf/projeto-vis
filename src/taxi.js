@@ -59,35 +59,103 @@ export class Taxi {
         return await this.query(sql);
     }
 
-    async queryCountByLocation(origin, limit = 10) {
-        if (!this.db || !this.conn)
-            throw new Error('Database not initialized. Please call init() first.');
+    async queryCountByLocation(idList) {
+      if (!this.db || !this.conn)
+          throw new Error('Database not initialized. Please call init() first.');
 
+      if (idList.length === 0) {
         const sql = `
-            SELECT DOLocationID, COUNT(*) AS count
-            FROM
-                taxi_2023
-            WHERE
-                PULocationID = '${origin}'
-            GROUP BY
-                DOLocationID
-            LIMIT ${limit}
+          SELECT DOLocationID, COUNT(*) AS count
+          FROM taxi_2023
+          GROUP BY DOLocationID
         `;
 
         return await this.query(sql);
-    }
+      }
 
-    async queryInfoByLocation(locationId) {
-        if (!this.db || !this.conn)
-            throw new Error('Database not initialized. Please call init() first.');
+      const numericIds = idList.map(id => Number(id)).filter(id => !isNaN(id));
 
+      const sql = `
+          SELECT DOLocationID, COUNT(*) AS count
+          FROM taxi_2023
+          WHERE PULocationID IN (${numericIds})
+          GROUP BY DOLocationID
+      `;
+
+      return await this.query(sql);
+  }
+
+    async queryInfoByLocation(idList, pickupDropoff = 'DOLocationID') {
+      if (!this.db || !this.conn)
+          throw new Error('Database not initialized. Please call init() first.');
+
+      if (idList.length === 0) {
         const sql = `
-            SELECT *
-            FROM ${this.table}
-            WHERE DOLocationID = '${locationId}'
+          SELECT DOLocationID, COUNT(*) AS count
+          FROM taxi_2023
+          GROUP BY DOLocationID
         `;
 
         return await this.query(sql);
+      }
+
+    const numericIds = idList.map(id => Number(id)).filter(id => !isNaN(id));
+
+      const sql = `
+          SELECT *
+          FROM ${this.table}
+          WHERE ${pickupDropoff} IN (${numericIds})
+      `;
+
+      return await this.query(sql);
     }
 
+    async queryInfoByDate(idList, variable = '*', aggregation = 'COUNT', pickupDropoff = 'DOLocationID') {
+      if (!this.db || !this.conn)
+          throw new Error('Database not initialized. Please call init() first.');
+
+      if (idList.length === 0) {
+        const sql = `
+      SELECT
+        strftime(lpep_pickup_datetime, '%Y-%m-%d') AS date,
+        ${aggregation.toUpperCase()}(${variable}) AS value,
+      FROM ${this.table}
+      WHERE strftime(lpep_pickup_datetime, '%Y') = '2023'
+        AND strftime(lpep_pickup_datetime, '%m') = printf('%02d', ${Number(month)})
+      GROUP BY
+        date
+      ORDER BY
+        date ASC
+      `;
+
+        return await this.query(sql);
+      }
+
+    const numericIds = idList.map(id => Number(id)).filter(id => !isNaN(id));
+
+    if (!this.db || !this.conn) {
+      throw new Error('Database not initialized. Please call init() first.');
+    }
+
+    const sql = `
+      SELECT
+        strftime(lpep_pickup_datetime, '%Y-%m-%d') AS date,
+        ${aggregation.toUpperCase()}(${variable}) AS value,
+        CASE
+          WHEN strftime(lpep_pickup_datetime, '%w') IN ('0', '6') THEN 1
+          ELSE 0
+        END AS is_weekend
+      FROM ${this.table}
+      WHERE strftime(lpep_pickup_datetime, '%Y') = '2023'
+        AND strftime(lpep_pickup_datetime, '%m') = printf('%02d', ${Number(month)})
+        AND ${pickupDropoff} IN (${numericIds})
+      GROUP BY
+        date,
+        is_weekend
+      ORDER BY
+        date ASC
+      ${limitClause};
+    `;
+    return await this.query(sql);
+  }
 }
