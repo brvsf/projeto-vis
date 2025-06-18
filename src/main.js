@@ -1,4 +1,5 @@
 import { loadMap, clearMap } from './map';
+import { linePlot } from './charts';
 import { Taxi } from './taxi';
 
 const taxi = new Taxi();
@@ -15,7 +16,16 @@ async function main(data) {
             console.log('Usuário clicou na região com ID:', clickedLocationId);
             try {
                 const result = await taxi.queryInfoByLocation(clickedLocationId);
+                const countByDay = await taxi.queryInfoByDate(clickedLocationId)
+                console.log('Test result:', countByDay);
                 console.log('Dados retornados da consulta:', result);
+                linePlot(countByDay, { left: 25, right: 25, top: 10, bottom: 20 }, (startDate, endDate) => {
+                  if (startDate && endDate) {
+                    console.log('Intervalo selecionado:', startDate.toLocaleDateString(), 'até', endDate.toLocaleDateString());
+                  } else {
+                    console.log('Seleção foi limpa');
+                  }
+                });
             } catch (err) {
                 console.error('Erro ao consultar dados para o local:', err);
             }

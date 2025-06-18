@@ -1,18 +1,31 @@
 import * as d3 from 'd3';
 
-export async function linePlot(
-  data,
-  variableKey,
-  month,
-  margens = { left: 50, right: 50, top: 50, bottom: 50 }
-) {
-  const svg = d3.select('#bottom-chart-svg').node().ownerSVGElement;
-  const g = d3.select('#bottom-chart-svg');
+export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom: 50 }, onBrushCallback) {
+  const svg = d3.select('#bottom-chart-svg').node();
+  const g = d3.select('#bottom-chart');
 
   if (!svg || g.empty()) {
     console.error('SVG or group element not found');
     return;
   }
+
+  data.forEach(d => {
+    d.date = new Date(d.date);
+    if (typeof d.value === 'bigint') {
+      d.value = Number(d.value.toString());
+    } else {
+      d.value = +d.value;
+    }
+  });
+
+  const dateExtent = d3.extent(data, d => d.date);
+  const allDates = d3.timeDay.range(dateExtent[0], d3.timeDay.offset(dateExtent[1], 1)); // inclui último dia
+
+  const dataMap = new Map(data.map(d => [d.date.toDateString(), d.value]));
+  const completeData = allDates.map(date => ({
+    date,
+    value: dataMap.get(date.toDateString()) ?? 0
+  }));
 
   const width = parseInt(d3.select(svg).style('width')) - margens.left - margens.right;
   const height = parseInt(d3.select(svg).style('height')) - margens.top - margens.bottom;
@@ -20,68 +33,26 @@ export async function linePlot(
   g.attr('transform', `translate(${margens.left}, ${margens.top})`);
 
   const xScale = d3.scaleTime()
-    .domain(d3.extent(data, d => d.date))
+    .domain(d3.extent(completeData, d => d.date))
     .range([0, width]);
 
-  const yMin = d3.min(data, d => d[variableKey]);
-  const yMax = d3.max(data, d => d[variableKey]);
-
+  const yMax = d3.max(completeData, d => d.value);
   const yScale = d3.scaleLinear()
     .domain([0, yMax])
     .range([height, 0])
     .nice();
 
-  // Aproximating the width of a day in the xScale
-  const dayWidth = xScale(new Date(data[0].date.getTime() + 24*60*60*1000)) - xScale(new Date(data[0].date));
+  const months = d3.timeMonth.range(dateExtent[0], d3.timeMonth.offset(dateExtent[1], 1));
 
-  const weekendRects = g.selectAll('rect.weekend')
-    .data(data.filter(d => d.is_weekend === 1));
-
-  weekendRects.enter()
-    .append('rect')
-    .attr('class', 'weekend')
-    .attr('x', d => xScale(d.date))
-    .attr('y', 0)
-    .attr('width', dayWidth)
-    .attr('height', height)
-    .attr('fill', 'orange')
-    .attr('opacity', 0.2)
-    .merge(weekendRects)
-    .transition()
-    .duration(500)
-    .attr('x', d => xScale(d.date))
-    .attr('width', dayWidth)
-    .attr('height', height)
-    .attr('opacity', 0.2);
-
-  weekendRects.exit().remove();
-
-  const line = d3.line()
-    .x(d => xScale(d.date))
-    .y(d => yScale(d[variableKey]));
-
-  const path = g.selectAll('.line-path').data([data]);
-
-  path.enter()
-    .append('path')
-    .attr('class', 'line-path')
-    .attr('fill', 'none')
-    .attr('stroke', 'steelblue')
-    .attr('stroke-width', 1.5)
-    .attr('d', line)
-    .merge(path)
-    .transition()
-    .duration(500)
-    .attr('d', line);
-
-  path.exit().remove();
-
-  const tickDates = data.map(d => d.date);
   const xAxis = d3.axisBottom(xScale)
-    .tickValues(tickDates)
-    .tickFormat(d3.timeFormat('%d'));
+    .tickValues(months)
+    .tickFormat(d => d.getMonth() + 1);
 
-  g.selectAll('.x-axis').data([null]).join(
+  const yAxis = d3.axisLeft(yScale)
+    .ticks(yMax < 10 ? yMax : 10)
+    .tickFormat(d => Number.isInteger(d) ? d : '');
+
+  g.selectAll('.x-axis').data([0]).join(
     enter => enter.append('g')
       .attr('class', 'x-axis')
       .attr('transform', `translate(0, ${height})`)
@@ -97,27 +68,56 @@ export async function linePlot(
       .style("text-anchor", "end")
   );
 
-  g.selectAll('.y-axis').data([null]).join(
+  g.selectAll('.y-axis').data([0]).join(
     enter => enter.append('g')
       .attr('class', 'y-axis')
-      .call(d3.axisLeft(yScale)),
+      .call(yAxis),
     update => update
       .transition()
       .duration(500)
-      .call(d3.axisLeft(yScale))
+      .call(yAxis)
   );
 
-  // Title
-  g.selectAll('.chart-title').data([null]).join(
-    enter => enter.append("text")
-      .attr("class", "chart-title")
-      .attr("x", width / 2)
-      .attr("y", -margens.top / 2)
-      .style("text-anchor", "middle")
-      .style("font-size", "1.5em")
-      .text(`Mean ${variableKey.charAt(0).toUpperCase()+ variableKey.slice(1).replace("_", " ")} per day in ${month}`),
-    update => update
-      .attr("x", width / 2)
-      .text(`Mean ${variableKey.charAt(0).toUpperCase()+ variableKey.slice(1).replace("_", " ")} per day in ${month}`),
-  )
+  const line = d3.line()
+    .x(d => xScale(d.date))
+    .y(d => yScale(d.value));
+
+  const path = g.selectAll('.line-path').data([completeData]);
+
+  path.enter()
+    .append('path')
+    .attr('class', 'line-path')
+    .attr('fill', 'none')
+    .attr('stroke', 'steelblue')
+    .attr('stroke-width', 1.5)
+    .attr('d', line)
+    .merge(path)
+    .transition()
+    .duration(500)
+    .attr('d', line);
+
+  path.exit().remove();
+
+  // Brush para seleção horizontal
+  const brush = d3.brushX()
+    .extent([[0, 0], [width, height]])
+    .on('brush end', (event) => {
+      if (event.selection) {
+        const [x0, x1] = event.selection;
+        const date0 = xScale.invert(x0);
+        const date1 = xScale.invert(x1);
+        if (typeof onBrushCallback === 'function') {
+          onBrushCallback(date0, date1);
+        }
+      } else {
+        if (typeof onBrushCallback === 'function') {
+          onBrushCallback(null, null);
+        }
+      }
+    });
+
+  g.selectAll('.brush').remove();
+  g.append('g')
+    .attr('class', 'brush')
+    .call(brush);
 }

@@ -114,23 +114,6 @@ export class Taxi {
       if (!this.db || !this.conn)
           throw new Error('Database not initialized. Please call init() first.');
 
-      if (idList.length === 0) {
-        const sql = `
-      SELECT
-        strftime(lpep_pickup_datetime, '%Y-%m-%d') AS date,
-        ${aggregation.toUpperCase()}(${variable}) AS value,
-      FROM ${this.table}
-      WHERE strftime(lpep_pickup_datetime, '%Y') = '2023'
-        AND strftime(lpep_pickup_datetime, '%m') = printf('%02d', ${Number(month)})
-      GROUP BY
-        date
-      ORDER BY
-        date ASC
-      `;
-
-        return await this.query(sql);
-      }
-
     const numericIds = idList.map(id => Number(id)).filter(id => !isNaN(id));
 
     if (!this.db || !this.conn) {
@@ -140,21 +123,14 @@ export class Taxi {
     const sql = `
       SELECT
         strftime(lpep_pickup_datetime, '%Y-%m-%d') AS date,
-        ${aggregation.toUpperCase()}(${variable}) AS value,
-        CASE
-          WHEN strftime(lpep_pickup_datetime, '%w') IN ('0', '6') THEN 1
-          ELSE 0
-        END AS is_weekend
+        ${aggregation.toUpperCase()}(${variable}) AS value
       FROM ${this.table}
-      WHERE strftime(lpep_pickup_datetime, '%Y') = '2023'
-        AND strftime(lpep_pickup_datetime, '%m') = printf('%02d', ${Number(month)})
-        AND ${pickupDropoff} IN (${numericIds})
+      WHERE ${pickupDropoff} IN (${numericIds})
+        AND lpep_pickup_datetime BETWEEN '2023-01-01 00:00:00' AND '2023-12-31 23:59:59'
       GROUP BY
-        date,
-        is_weekend
+        date
       ORDER BY
-        date ASC
-      ${limitClause};
+        date ASC;
     `;
     return await this.query(sql);
   }
