@@ -134,4 +134,22 @@ export class Taxi {
     `;
     return await this.query(sql);
   }
+
+  async queryInfoByHour(variable = '*', aggregation = 'COUNT', start_date = '2023-01-01 00:00:00', end_date = '2023-12-31 23:59:59') {
+    if (!this.db || !this.conn)
+        throw new Error('Database not initialized. Please call init() first.');
+
+    const sql = `
+        SELECT
+          strftime(lpep_pickup_datetime, '%Y-%m-%d %H:00:00') AS hour,
+          ${aggregation.toUpperCase()}(${variable}) AS value
+        FROM ${this.table}
+        WHERE lpep_pickup_datetime BETWEEN '${start_date}' AND '${end_date}'
+        GROUP BY
+          hour
+        ORDER BY
+          hour ASC;
+    `;
+    return await this.query(sql);
+  }
 }

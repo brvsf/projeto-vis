@@ -82,17 +82,17 @@ button:focus {
 .right-column {
   display: flex;
   flex-direction: column;
-  gap: 20px;
-  align-items: center;
-  width: 420px;
+  gap: 10px;
+  align-items: left;
+  width: 60px; /* 420 + 240 + 20 */
 }
 
 .small-chart svg {
   background-color: #ffffff;
   border-radius: 8px;
   border: #bfbfbf solid 1px;
-  width: 400px;
-  height: 200px;
+  width: 570px; /* 680 - 20 de margem lateral, se houver */
+  height: 206px;
 }
 
 /* gráfico horizontal */
@@ -107,10 +107,19 @@ button:focus {
   border-radius: 8px;
   border: #bfbfbf solid 1px;
   height: 240px;
-  width: 1088px; /* 500 mapa + 420 direita + 20 gap */
+  width: 988px; /* 500 mapa + 420 direita + 20 gap */
 }
 
-/* selects */
+#side-svg {
+  background-color: #ffffff;
+  border-radius: 8px;
+  border: #bfbfbf solid 1px;
+  width: 240px;
+  height: 240px;
+  margin-left: 20px;
+}
+
+
 #variable-select, #month-select, #aggregation-select {
   padding: 10px;
   font-size: 16px;
