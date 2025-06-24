@@ -102,13 +102,12 @@ export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom:
 
   const brush = d3.brushX()
     .extent([[0, 0], [width, height]])
-    .on('brush end', (event) => {
+    .on('end', (event) => {
       if (event.selection) {
         const [x0, x1] = event.selection;
         const date0 = xScale.invert(x0);
         const date1 = xScale.invert(x1);
 
-        // Formata as datas no formato desejado
         const formattedDate0 = formatDateHour(date0);
         const formattedDate1 = formatDateHour(date1);
 
@@ -128,8 +127,7 @@ export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom:
     .call(brush);
 }
 
-export function donutPlot(data, onSelectCallback = () => {}, selectedHours = new Set()) {
-
+export function donutPlot(data, onSelectCallback = () => {}, selectedHours = new Set(), maxValue = null) {
   const svg = d3.select('#side-svg');
   const { width, height } = svg.node().getBoundingClientRect();
   const radius = Math.min(width, height) / 2;
@@ -158,8 +156,12 @@ export function donutPlot(data, onSelectCallback = () => {}, selectedHours = new
     }
   });
 
+  if (maxValue === null) {
+    maxValue = d3.max(hourTotals, d => d.value);
+  }
+
   const color = d3.scaleSequential()
-    .domain([0, d3.max(hourTotals, d => d.value)])
+    .domain([0, maxValue])
     .interpolator(d3.interpolateReds);
 
   const arc = d3.arc()
@@ -172,40 +174,33 @@ export function donutPlot(data, onSelectCallback = () => {}, selectedHours = new
 
   const pieData = pie(hourTotals);
 
-  const arcs = g.selectAll('path')
+  const arcs = g.selectAll('path.donut-slice')
     .data(pieData, d => d.data.hour);
-
-  function getTextColor(hour) {
-      const norm = hour / 23;
-      return norm > 0.4 ? 'white' : 'black';
-    }
 
   arcs.enter()
     .append('path')
     .attr('class', 'donut-slice')
     .attr('stroke', 'white')
     .attr('stroke-width', 1)
+    .style('cursor', 'pointer')
+    .merge(arcs)
     .attr('fill', d => selectedHours.has(d.data.hour) ? 'steelblue' : color(d.data.value))
     .attr('d', arc)
-    .style('cursor', 'pointer')
-    .on('click', function (event, d) {
+    .on('click', function(event, d) {
       const hour = d.data.hour;
       if (selectedHours.has(hour)) {
         selectedHours.delete(hour);
       } else {
         selectedHours.add(hour);
       }
-      onSelectCallback(new Set(selectedHours));
-      donutPlot(data, onSelectCallback, selectedHours);
-    })
-    .append('title')
-    .text(d => `${d.data.hour}h: ${d.data.value} corridas`);
 
-  arcs
-    .transition()
-    .duration(300)
-    .attr('d', arc)
-    .attr('fill', d => selectedHours.has(d.data.hour) ? 'steelblue' : color(d.data.value));
+      g.selectAll('path.donut-slice')
+        .transition()
+        .duration(300)
+        .attr('fill', d => selectedHours.has(d.data.hour) ? 'steelblue' : color(d.data.value));
+
+      onSelectCallback(new Set(selectedHours));
+    });
 
   arcs.exit().remove();
 
@@ -217,12 +212,12 @@ export function donutPlot(data, onSelectCallback = () => {}, selectedHours = new
     .attr('text-anchor', 'middle')
     .attr('alignment-baseline', 'middle')
     .attr('font-size', 10)
-    .attr('fill', d => getTextColor(d.data.hour))
     .attr('pointer-events', 'none')
     .merge(texts)
     .transition()
     .duration(300)
     .attr('transform', d => `translate(${arc.centroid(d)})`)
+    .attr('fill', d => d.data.hour / 23 > 0.4 ? 'white' : 'black')
     .text(d => `${d.data.hour}h`);
 
   texts.exit().remove();

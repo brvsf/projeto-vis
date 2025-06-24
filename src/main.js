@@ -1,77 +1,80 @@
 import { loadMap, clearMap } from './map';
 import { linePlot, donutPlot } from './charts';
 import { Taxi } from './taxi';
+import { getDropdownValues } from './utils.js';
 
 const taxi = new Taxi();
+const selectedIds = new Set();
 
-async function main(data) {
-    const loadBtn = document.querySelector('#question1');
-    const clearBtn = document.querySelector('#question2');
+function onBrush(startDate, endDate) {
+  if (startDate && endDate) {
+    console.log('=== Brush selecionado ===');
+    console.log('Intervalo selecionado:', startDate, 'até', endDate);
 
-    if (!loadBtn || !clearBtn) return;
-
-    loadBtn.addEventListener('click', async () => {
-        clearMap();
-
-        await loadMap(data, taxi, async (clickedLocationId) => {
-            console.log('Usuário clicou na região com ID:', clickedLocationId);
-            try {
-                // Consulta principal por local
-                const result = await taxi.queryInfoByLocation(clickedLocationId);
-
-                // Contagem diária (para o gráfico de linha)
-                const countByDay = await taxi.queryInfoByDate(clickedLocationId);
-                console.log('Contagem diária:', countByDay);
-
-                // Renderiza o gráfico de linha com callback para brush
-                linePlot(countByDay, { left: 25, right: 25, top: 10, bottom: 20 }, async (startDate, endDate) => {
-                    if (startDate && endDate) {
-                        console.log('Intervalo selecionado:', startDate, 'até', endDate);
-
-                        // Atualiza os dados por hora conforme o intervalo selecionado no brush
-                        const selectedData = await taxi.queryInfoByHour('*', 'COUNT', startDate, endDate);
-                        console.log('Dados selecionados por hora:', selectedData);
-
-                        // Atualiza o donut plot passando as horas selecionadas (supondo que donutPlot aceite callback)
-                        donutPlot(selectedData, (selectedHours) => {
-                            console.log('Horas selecionadas no donut:', [...selectedHours]);
-                        });
-                    } else {
-                        console.log('Seleção foi limpa');
-
-                        const allHoursData = await taxi.queryInfoByHour();
-                        donutPlot(allHoursData, (selectedHours) => {
-                            console.log('Horas selecionadas no donut:', [...selectedHours]);
-                        });
-                    }
-                });
-
-                // Inicializa o donut plot com dados gerais por hora (sem filtro)
-                const allHoursData = await taxi.queryInfoByHour();
-                donutPlot(allHoursData, (selectedHours) => {
-                    console.log('Horas selecionadas no donut:', [...selectedHours]);
-                });
-
-                console.log('Dados retornados da consulta por local:', result);
-            } catch (err) {
-                console.error('Erro ao consultar dados para o local:', err);
-            }
-        });
+    taxi.queryInfoByHour('*', 'COUNT', startDate, endDate).then((hourData) => {
+      console.log('Dados filtrados por brush (hora):', hourData);
+      donutPlot(hourData, onDonutClick, new Set());
+    }).catch(err => {
+      console.error('Erro na queryInfoByHour dentro do brush:', err);
     });
-
-    clearBtn.addEventListener('click', () => {
-        clearMap();
+  } else {
+    console.log('=== Brush limpo (sem seleção) ===');
+    taxi.queryInfoByHour().then((allHoursData) => {
+      console.log('Dados gerais para donut (sem filtro de brush):', allHoursData);
+      donutPlot(allHoursData, onDonutClick, new Set());
+    }).catch(err => {
+      console.error('Erro na queryInfoByHour para dados gerais:', err);
     });
+  }
+}
+
+function onDonutClick(selectedHours) {
+  console.log('Horas selecionadas no donut:', [...selectedHours]);
+}
+
+async function loadCharts() {
+  try {
+    const locationFilter = Array.from(selectedIds);
+    console.log('=== Carregando gráficos com filtro de localizações ===');
+    console.log('IDs selecionados no mapa:', locationFilter);
+
+    const { variable, aggregation } = getDropdownValues();
+    console.log('Variável selecionada:', variable);
+    console.log('Agregação selecionada:', aggregation);
+
+    const countByDay = await taxi.queryInfoByDate(locationFilter);
+    console.log('Dados filtrados por data (contagem diária):', countByDay);
+
+    linePlot(countByDay, { left: 25, right: 25, top: 10, bottom: 20 }, onBrush);
+
+    const allHoursData = await taxi.queryInfoByHour();
+    console.log('Dados gerais para donut plot (antes do filtro do brush):', allHoursData);
+
+    donutPlot(allHoursData, onDonutClick, new Set());
+  } catch (err) {
+    console.error('Erro ao carregar os gráficos:', err);
+  }
 }
 
 window.onload = async () => {
+  try {
     const response = await fetch('00 - data/taxi-zones.json');
     const neighs = await response.json();
 
-    console.log('Initializing Taxi...');
+    console.log('Inicializando Taxi...');
     await taxi.init();
     await taxi.loadTaxi();
-    console.log('Taxi initialized');
+    console.log('Taxi carregado');
 
-    main(neighs);
+    await loadMap(neighs, taxi, async (clickedLocationIdList) => {
+      selectedIds.clear();
+      clickedLocationIdList.forEach(id => selectedIds.add(id));
+      console.log('IDs selecionados no mapa após clique:', [...selectedIds]);
+      await loadCharts();
+    });
+
+    await loadCharts();
+  } catch (err) {
+    console.error('Erro no carregamento inicial:', err);
+  }
 };

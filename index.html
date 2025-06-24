@@ -2,15 +2,26 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Trabalho 1</title>
+  <title>New York Taxi</title>
   <link rel="stylesheet" href="index.css" />
 </head>
 <body>
   <div class="page-layout">
     <!-- Botões à esquerda -->
     <div class="buttom-container">
-      <button id="question1">Dias da Semana</button>
-      <button id="question2">Gorjeta x Hora</button>
+      <label for="variable-select">Variável a analisar:</label>
+      <select id="variable-select">
+        <option value="tip_amount">Valor da Gorjeta</option>
+        <option value="total_amount">Valor Total</option>
+        <option value="fare_amount">Valor da Corrida</option>
+        <option value="trip_distance">Distância da Corrida</option>
+      </select>
+
+      <label for="aggregation-select" style="margin-top: 16px;">Tipo de agregação:</label>
+      <select id="aggregation-select">
+        <option value="SUM">Soma</option>
+        <option value="AVG">Média</option>
+      </select>
     </div>
 
     <!-- Resto do conteúdo -->
