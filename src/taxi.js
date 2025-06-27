@@ -125,36 +125,42 @@ export class Taxi {
     return await this.query(sql);
   }
 
-  async queryFilteredAggregation({ locationIds = [], startDate, endDate, hours = [], groupBy = 'date' }) {
-    if (!this.db || !this.conn)
+  async queryAgreggatedData(locationsIds, startDate, endDate, hours, variable = '*', aggregation = 'COUNT') {
+    if (!this.db || !this.conn) {
       throw new Error('Database not initialized. Please call init() first.');
-
-    const conditions = [];
-
-    if (locationIds.length > 0) {
-      conditions.push(`PULocationID IN (${locationIds.join(',')})`);
     }
 
-    if (startDate && endDate) {
-      conditions.push(`lpep_pickup_datetime BETWEEN '${startDate} 00:00:00' AND '${endDate} 23:59:59'`);
+    const hasLocations = Array.isArray(locationsIds) && locationsIds.length > 0;
+    const hasDates = startDate && endDate;
+    const hasHours = Array.isArray(hours) && hours.length > 0;
+
+    let locationCondition = '';
+      if (hasLocations) {
+        const numericIds = locationsIds.map(id => Number(id)).filter(id => !isNaN(id));
+        locationCondition = `PULocationID IN (${numericIds.join(',')})`;
+      }
+
+    let dateCondition = '';
+    if (hasDates) {
+      dateCondition = `lpep_pickup_datetime BETWEEN '${startDate} 00:00:00' AND '${endDate} 23:59:59'`;
     }
 
-    if (hours.length > 0) {
-      conditions.push(`CAST(strftime(lpep_pickup_datetime, '%H') AS INTEGER) IN (${hours.join(',')})`);
+    let hourCondition = '';
+
+    if (hasHours) {
+      hourCondition = `CAST(strftime(lpep_pickup_datetime, '%H') AS INTEGER) IN (${hours.join(',')})`;
     }
-
-    const groupCol = groupBy === 'hour'
-      ? `strftime(lpep_pickup_datetime, '%Y-%m-%d %H:00:00')`
-      : `strftime(lpep_pickup_datetime, '%Y-%m-%d')`;
-
+    const conditions = [locationCondition, dateCondition, hourCondition].filter(Boolean);
     const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
     const sql = `
-      SELECT ${groupCol} AS ${groupBy}, COUNT(*) AS value
+      SELECT
+        strftime(lpep_pickup_datetime, '%Y-%m-%d') AS date,
+        ${aggregation.toUpperCase()}(${variable}) AS value
       FROM ${this.table}
       ${whereClause}
-      GROUP BY ${groupBy}
-      ORDER BY ${groupBy}
+      GROUP BY date
+      ORDER BY date
     `;
 
     return await this.query(sql);
