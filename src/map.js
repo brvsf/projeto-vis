@@ -70,26 +70,22 @@ function handleClick(event, d, onDataFiltered) {
   const locationId = d.properties.objectid;
 
   if (event.shiftKey) {
-    // Shift = seleção múltipla
     if (selectedIds.has(locationId)) {
       selectedIds.delete(locationId);
     } else {
       selectedIds.add(locationId);
     }
   } else {
-    // Clique normal = seleção única
     selectedIds.clear();
     selectedIds.add(locationId);
   }
 
-  // Atualiza visualmente os selecionados
   d3.selectAll('#group path')
     .style('fill', d => {
       const id = d.properties.objectid;
       return selectedIds.has(id) ? 'yellow' : '#cce5ff';
     });
 
-  // Dispara callback com os selecionados
   if (onDataFiltered) {
     onDataFiltered(Array.from(selectedIds));
   }

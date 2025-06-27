@@ -1,5 +1,6 @@
 import { loadMap } from './map';
 import { linePlot, donutPlot } from './filters.js';
+import { histPlot } from './charts.js';
 import { Taxi } from './taxi';
 import { getDropdownValues } from './utils.js';
 

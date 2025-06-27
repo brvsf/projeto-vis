@@ -9,9 +9,6 @@ export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom:
     return;
   }
 
-  console.log('=== Dados recebidos para o gráfico de linha ===');
-  console.log(data);
-
   data.forEach(d => {
     d.date = new Date(d.date);
     if (typeof d.value === 'bigint') {
