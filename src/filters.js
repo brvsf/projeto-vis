@@ -9,6 +9,9 @@ export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom:
     return;
   }
 
+  console.log('=== Dados recebidos para o gráfico de linha ===');
+  console.log(data);
+
   data.forEach(d => {
     d.date = new Date(d.date);
     if (typeof d.value === 'bigint') {
@@ -19,7 +22,7 @@ export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom:
   });
 
   const dateExtent = d3.extent(data, d => d.date);
-  const allDates = d3.timeDay.range(dateExtent[0], d3.timeDay.offset(dateExtent[1], 1)); // inclui último dia
+  const allDates = d3.timeDay.range(dateExtent[0], dateExtent[1]);
 
   const dataMap = new Map(data.map(d => [d.date.toDateString(), d.value]));
   const completeData = allDates.map(date => ({
@@ -42,7 +45,7 @@ export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom:
     .range([height, 0])
     .nice();
 
-  const months = d3.timeMonth.range(dateExtent[0], d3.timeMonth.offset(dateExtent[1], 1));
+  const months = d3.timeMonth.range(dateExtent[0], dateExtent[1]);
 
   const xAxis = d3.axisBottom(xScale)
     .tickValues(months)

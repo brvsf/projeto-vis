@@ -1,5 +1,5 @@
-import { loadMap, clearMap } from './map';
-import { linePlot, donutPlot } from './charts';
+import { loadMap } from './map';
+import { linePlot, donutPlot } from './filters.js';
 import { Taxi } from './taxi';
 import { getDropdownValues } from './utils.js';
 
@@ -45,7 +45,7 @@ async function loadCharts() {
     const countByDay = await taxi.queryInfoByDate(locationFilter);
     console.log('Dados filtrados por data (contagem diária):', countByDay);
 
-    linePlot(countByDay, { left: 25, right: 25, top: 10, bottom: 20 }, onBrush);
+    linePlot(countByDay, { left: 35, right: 15, top: 10, bottom: 20 }, onBrush);
 
     const allHoursData = await taxi.queryInfoByHour();
     console.log('Dados gerais para donut plot (antes do filtro do brush):', allHoursData);
