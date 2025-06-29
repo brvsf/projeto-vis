@@ -1,6 +1,6 @@
 import { loadMap } from './map';
 import { linePlot, donutPlot } from './filters.js';
-import { histPlot } from './charts.js';
+import { histPlot, barPlot } from './charts.js';
 import { Taxi } from './taxi';
 import { getDropdownValues } from './utils.js';
 
@@ -66,7 +66,9 @@ async function loadCharts() {
   );
 
   console.log('Agreggated by payment type:', agregatedByPaymentType);
-  histPlot(agreggatedData, { left: 25, right: 25, top: 50, bottom: 20 });
+
+  histPlot(agreggatedData, { left: 30, right: 15, top: 50, bottom: 20 });
+  barPlot(agregatedByPaymentType, { left: 60, right: 15, top: 50, bottom: 20 });
 }
 
 window.onload = async () => {

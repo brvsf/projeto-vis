@@ -215,7 +215,7 @@ export function donutPlot(data, onSelectCallback = () => {}, selectedHours = new
     .attr('pointer-events', 'none')
     .merge(texts)
     .transition()
-    .duration(300)
+    .duration(500)
     .attr('transform', d => `translate(${arc.centroid(d)})`)
     .attr('fill', d => d.data.hour / 23 > 0.4 ? 'white' : 'black')
     .text(d => `${d.data.hour}h`);

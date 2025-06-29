@@ -194,9 +194,9 @@ export class Taxi {
     const conditions = [locationCondition, dateCondition, hourCondition].filter(Boolean);
     let whereClause = '';
     if (conditions.length > 0) {
-      whereClause = `WHERE ${conditions.join(' AND ')} AND payment_type IS NOT NULL`;
+      whereClause = `WHERE ${conditions.join(' AND ')} AND payment_type IS NOT NULL AND payment_type != 6`;
     } else {
-      whereClause = `WHERE payment_type IS NOT NULL`;
+      whereClause = `WHERE payment_type IS NOT NULL AND payment_type != 6`;
     }
 
     const sql = `
