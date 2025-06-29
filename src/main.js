@@ -56,6 +56,16 @@ async function loadCharts() {
     aggregation
   );
 
+  const agregatedByPaymentType = await taxi.queryAgreggatedByPaymentType(
+    locationFilter,
+    startDate,
+    endDate,
+    hours,
+    variable,
+    'COUNT'
+  );
+
+  console.log('Agreggated by payment type:', agregatedByPaymentType);
   histPlot(agreggatedData, { left: 25, right: 25, top: 50, bottom: 20 });
 }
 

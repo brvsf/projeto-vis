@@ -165,4 +165,50 @@ export class Taxi {
 
     return await this.query(sql);
   }
+
+  async queryAgreggatedByPaymentType(locationsIds, startDate, endDate, hours, variable = '*', aggregation = 'COUNT') {
+    if (!this.db || !this.conn) {
+      throw new Error('Database not initialized. Please call init() first.');
+    }
+
+    const hasLocations = Array.isArray(locationsIds) && locationsIds.length > 0;
+    const hasDates = startDate && endDate;
+    const hasHours = Array.isArray(hours) && hours.length > 0;
+
+    let locationCondition = '';
+      if (hasLocations) {
+        const numericIds = locationsIds.map(id => Number(id)).filter(id => !isNaN(id));
+        locationCondition = `PULocationID IN (${numericIds.join(',')})`;
+      }
+
+    let dateCondition = '';
+    if (hasDates) {
+      dateCondition = `lpep_pickup_datetime BETWEEN '${startDate} 00:00:00' AND '${endDate} 23:59:59'`;
+    }
+
+    let hourCondition = '';
+
+    if (hasHours) {
+      hourCondition = `CAST(strftime(lpep_pickup_datetime, '%H') AS INTEGER) IN (${hours.join(',')})`;
+    }
+    const conditions = [locationCondition, dateCondition, hourCondition].filter(Boolean);
+    let whereClause = '';
+    if (conditions.length > 0) {
+      whereClause = `WHERE ${conditions.join(' AND ')} AND payment_type IS NOT NULL`;
+    } else {
+      whereClause = `WHERE payment_type IS NOT NULL`;
+    }
+
+    const sql = `
+      SELECT
+        ${aggregation.toUpperCase()}(${variable}) AS value,
+        payment_type
+      FROM ${this.table}
+      ${whereClause}
+      GROUP BY payment_type
+      ORDER BY payment_type
+    `;
+
+    return await this.query(sql);
+  }
 }
