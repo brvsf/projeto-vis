@@ -162,7 +162,7 @@ export function donutPlot(data, onSelectCallback = () => {}, selectedHours = new
 
   const color = d3.scaleSequential()
     .domain([0, maxValue])
-    .interpolator(d3.interpolateReds);
+    .interpolator(d3.interpolateBlues);
 
   const arc = d3.arc()
     .innerRadius(radius * 0.6)
@@ -184,7 +184,7 @@ export function donutPlot(data, onSelectCallback = () => {}, selectedHours = new
     .attr('stroke-width', 1)
     .style('cursor', 'pointer')
     .merge(arcs)
-    .attr('fill', d => selectedHours.has(d.data.hour) ? 'steelblue' : color(d.data.value))
+    .attr('fill', d => selectedHours.has(d.data.hour) ? 'yellow' : color(d.data.value))
     .attr('d', arc)
     .on('click', function(event, d) {
       const hour = d.data.hour;
@@ -197,7 +197,7 @@ export function donutPlot(data, onSelectCallback = () => {}, selectedHours = new
       g.selectAll('path.donut-slice')
         .transition()
         .duration(300)
-        .attr('fill', d => selectedHours.has(d.data.hour) ? 'steelblue' : color(d.data.value));
+        .attr('fill', d => selectedHours.has(d.data.hour) ? 'yellow' : color(d.data.value));
 
       onSelectCallback(new Set(selectedHours));
     });

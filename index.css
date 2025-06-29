@@ -78,7 +78,7 @@ button:focus {
   width: 60px;
 }
 
-.small-chart svg {
+.small-chart-div svg {
   background-color: #ffffff;
   border-radius: 8px;
   border: #bfbfbf solid 1px;

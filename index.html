@@ -14,13 +14,16 @@
         <option value="tip_amount">Valor da Gorjeta</option>
         <option value="total_amount">Valor Total</option>
         <option value="fare_amount">Valor da Corrida</option>
-        <option value="trip_distance">Distância da Corrida</option>
+        <option value="tolls_amount">Valor das Porcentagens</option>
+        <option value="extra">Valor Extra</option>
+        <option value="improvement_surcharge">Taxa de Melhoria</option>
+        <option value="mta_tax">Taxa MTA</option>
       </select>
 
       <label for="aggregation-select" style="margin-top: 16px;">Tipo de agregação:</label>
       <select id="aggregation-select">
-        <option value="SUM">Soma</option>
         <option value="AVG">Média</option>
+        <option value="SUM">Soma</option>
       </select>
     </div>
 
@@ -33,9 +36,9 @@
 
         <!-- Gráficos a direita -->
         <div class="right-column">
-          <div class="small-chart"><svg><g id="chart1"></g></svg></div>
-          <div class="small-chart"><svg><g id="chart2"></g></svg></div>
-          <div class="small-chart"><svg><g id="chart3"></g></svg></div>
+          <div class="small-chart-div"><svg id="small-chart1"><g id="chart1"></g></svg></div>
+          <div class="small-chart-div"><svg id="small-chart2"><g id="chart2"></g></svg></div>
+          <div class="small-chart-div"><svg id="small-chart3"><g id="chart3"></g></svg></div>
         </div>
       </div>
 

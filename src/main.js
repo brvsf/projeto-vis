@@ -6,76 +6,76 @@ import { getDropdownValues } from './utils.js';
 
 const taxi = new Taxi();
 const selectedIds = new Set();
+let brushDates = { startDate: null, endDate: null };
+let selectedHours = new Set();
 
 function onBrush(startDate, endDate) {
-  if (startDate && endDate) {
-    console.log('=== Brush selecionado ===');
-    console.log('Intervalo selecionado:', startDate, 'até', endDate);
+  brushDates = { startDate, endDate };
 
+  if (startDate && endDate) {
     taxi.queryInfoByHour('*', 'COUNT', startDate, endDate).then((hourData) => {
-      console.log('Dados filtrados por brush (hora):', hourData);
-      donutPlot(hourData, onDonutClick, new Set());
-    }).catch(err => {
-      console.error('Erro na queryInfoByHour dentro do brush:', err);
+      donutPlot(hourData, onDonutClick, selectedHours);
     });
   } else {
-    console.log('=== Brush limpo (sem seleção) ===');
     taxi.queryInfoByHour().then((allHoursData) => {
-      console.log('Dados gerais para donut (sem filtro de brush):', allHoursData);
-      donutPlot(allHoursData, onDonutClick, new Set());
-    }).catch(err => {
-      console.error('Erro na queryInfoByHour para dados gerais:', err);
+      donutPlot(allHoursData, onDonutClick, selectedHours);
     });
   }
+  loadCharts();
 }
 
-function onDonutClick(selectedHours) {
-  console.log('Horas selecionadas no donut:', [...selectedHours]);
+function onDonutClick(newSelection) {
+  selectedHours = newSelection;
+  loadCharts();
+}
+
+async function loadFilters() {
+
+  const locationFilter = Array.from(selectedIds);
+
+  const countByDay = await taxi.queryInfoByDate(locationFilter);
+  linePlot(countByDay, { left: 35, right: 15, top: 10, bottom: 20 }, onBrush);
+
+  const hourData = await taxi.queryInfoByHour();
+  donutPlot(hourData, onDonutClick, selectedHours);
+
 }
 
 async function loadCharts() {
-  try {
-    const locationFilter = Array.from(selectedIds);
-    console.log('=== Carregando gráficos com filtro de localizações ===');
-    console.log('IDs selecionados no mapa:', locationFilter);
+  const locationFilter = Array.from(selectedIds);
+  const { startDate, endDate } = brushDates;
+  const hours = Array.from(selectedHours);
+  const { variable, aggregation } = getDropdownValues();
 
-    const { variable, aggregation } = getDropdownValues();
-    console.log('Variável selecionada:', variable);
-    console.log('Agregação selecionada:', aggregation);
+  const agreggatedData = await taxi.queryAgreggatedData(
+    locationFilter,
+    startDate,
+    endDate,
+    hours,
+    variable,
+    aggregation
+  );
 
-    const countByDay = await taxi.queryInfoByDate(locationFilter);
-    console.log('Dados filtrados por data (contagem diária):', countByDay);
-
-    linePlot(countByDay, { left: 35, right: 15, top: 10, bottom: 20 }, onBrush);
-
-    const allHoursData = await taxi.queryInfoByHour();
-    console.log('Dados gerais para donut plot (antes do filtro do brush):', allHoursData);
-
-    donutPlot(allHoursData, onDonutClick, new Set());
-  } catch (err) {
-    console.error('Erro ao carregar os gráficos:', err);
-  }
+  histPlot(agreggatedData, { left: 25, right: 25, top: 50, bottom: 20 });
 }
 
 window.onload = async () => {
-  try {
-    const response = await fetch('00 - data/taxi-zones.json');
-    const neighs = await response.json();
+  const response = await fetch('00 - data/taxi-zones.json');
+  const neighs = await response.json();
 
-    console.log('Inicializando Taxi...');
-    await taxi.init();
-    await taxi.loadTaxi();
-    console.log('Taxi carregado');
+  await taxi.init();
+  await taxi.loadTaxi();
 
-    await loadMap(neighs, taxi, async (clickedLocationIdList) => {
-      selectedIds.clear();
-      clickedLocationIdList.forEach(id => selectedIds.add(id));
-      console.log('IDs selecionados no mapa após clique:', [...selectedIds]);
-      await loadCharts();
-    });
-
+  await loadMap(neighs, taxi, async (clickedLocationIdList) => {
+    selectedIds.clear();
+    clickedLocationIdList.forEach(id => selectedIds.add(id));
+    await loadFilters();
     await loadCharts();
-  } catch (err) {
-    console.error('Erro no carregamento inicial:', err);
-  }
+  });
+
+  await loadFilters();
+  await loadCharts();
+
+  document.getElementById('variable-select').addEventListener('change', loadCharts);
+  document.getElementById('aggregation-select').addEventListener('change', loadCharts);
 };
