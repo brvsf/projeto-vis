@@ -72,6 +72,80 @@ export function histPlot(data, margens = { left: 50, right: 50, top: 50, bottom:
     .attr('height', d => height - yScale(d.length));
 }
 
+export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom: 50 }) {
+  const svg = d3.select('#small-chart2').node();
+  const g = d3.select('#chart2');
+
+  if (!svg || g.empty()) {
+    console.error('SVG or group element not found');
+    return;
+  }
+
+  const width = parseInt(d3.select(svg).style('width')) - margens.left - margens.right;
+  const height = parseInt(d3.select(svg).style('height')) - margens.top - margens.bottom;
+
+  g.attr('transform', `translate(${margens.left}, ${margens.top})`);
+
+  const parseDate = d3.timeParse('%Y-%m-%d');
+  const filteredData = data
+  .map(d => ({ date: parseDate(d.date), value: +d.value }))
+  .filter(d => d.date && d.date.getFullYear() >= 2023 && !isNaN(d.value))
+  .sort((a, b) => d3.ascending(a.date, b.date));
+
+  const xScale = d3.scaleTime()
+    .domain(d3.extent(filteredData, d => d.date))
+    .range([0, width]);
+
+  const yScale = d3.scaleLinear()
+    .domain([0, d3.max(filteredData, d => d.value)])
+    .range([height, 0])
+    .nice();
+
+  let xAxisGroup = g.selectAll('.x-axis').data([0]);
+  xAxisGroup = xAxisGroup.enter()
+    .append('g')
+    .attr('class', 'x-axis')
+    .attr('transform', `translate(0, ${height})`)
+    .merge(xAxisGroup);
+
+  xAxisGroup.transition()
+    .duration(600)
+    .call(d3.axisBottom(xScale).ticks(6).tickFormat(d3.timeFormat('%b %d')))
+    .selectAll('text')
+    .attr('transform')
+    .style('text-anchor', 'end');
+
+  let yAxisGroup = g.selectAll('.y-axis').data([0]);
+  yAxisGroup = yAxisGroup.enter()
+    .append('g')
+    .attr('class', 'y-axis')
+    .merge(yAxisGroup);
+
+  yAxisGroup.transition()
+    .duration(600)
+    .call(d3.axisLeft(yScale));
+
+  const line = d3.line()
+    .x(d => xScale(d.date))
+    .y(d => yScale(d.value))
+    .curve(d3.curveMonotoneX);
+
+  let path = g.selectAll('.line-path').data([filteredData]);
+
+  path.enter()
+    .append('path')
+    .attr('class', 'line-path')
+    .attr('fill', 'none')
+    .attr('stroke', 'steelblue')
+    .attr('stroke-width', 2)
+    .merge(path)
+    .transition()
+    .duration(600)
+    .attr('d', line);
+
+  path.exit().remove();
+}
+
 
 export function barPlot(data, margens = { left: 50, right: 50, top: 50, bottom: 50 }) {
   const svg = d3.select('#small-chart3').node();

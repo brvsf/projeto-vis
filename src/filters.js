@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
 
-export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom: 50 }, onBrushCallback) {
+export function lineFilter(data, margens = { left: 50, right: 50, top: 50, bottom: 50 }, onBrushCallback) {
   const svg = d3.select('#bottom-chart-svg').node();
   const g = d3.select('#bottom-chart');
 
@@ -127,7 +127,7 @@ export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom:
     .call(brush);
 }
 
-export function donutPlot(data, onSelectCallback = () => {}, selectedHours = new Set(), maxValue = null) {
+export function donutFilter(data, onSelectCallback = () => {}, selectedHours = new Set(), maxValue = null) {
   const svg = d3.select('#side-svg');
   const { width, height } = svg.node().getBoundingClientRect();
   const radius = Math.min(width, height) / 2;

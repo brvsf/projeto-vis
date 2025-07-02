@@ -1,6 +1,6 @@
 import { loadMap } from './map';
-import { linePlot, donutPlot } from './filters.js';
-import { histPlot, barPlot } from './charts.js';
+import { lineFilter, donutFilter } from './filters.js';
+import { histPlot, linePlot, barPlot } from './charts.js';
 import { Taxi } from './taxi';
 import { getDropdownValues } from './utils.js';
 
@@ -14,11 +14,11 @@ function onBrush(startDate, endDate) {
 
   if (startDate && endDate) {
     taxi.queryInfoByHour('*', 'COUNT', startDate, endDate).then((hourData) => {
-      donutPlot(hourData, onDonutClick, selectedHours);
+      donutFilter(hourData, onDonutClick, selectedHours);
     });
   } else {
     taxi.queryInfoByHour().then((allHoursData) => {
-      donutPlot(allHoursData, onDonutClick, selectedHours);
+      donutFilter(allHoursData, onDonutClick, selectedHours);
     });
   }
   loadCharts();
@@ -34,10 +34,10 @@ async function loadFilters() {
   const locationFilter = Array.from(selectedIds);
 
   const countByDay = await taxi.queryInfoByDate(locationFilter);
-  linePlot(countByDay, { left: 35, right: 15, top: 10, bottom: 20 }, onBrush);
+  lineFilter(countByDay, { left: 35, right: 15, top: 10, bottom: 20 }, onBrush);
 
   const hourData = await taxi.queryInfoByHour();
-  donutPlot(hourData, onDonutClick, selectedHours);
+  donutFilter(hourData, onDonutClick, selectedHours);
 
 }
 
@@ -65,9 +65,10 @@ async function loadCharts() {
     'COUNT'
   );
 
-  console.log('Agreggated by payment type:', agregatedByPaymentType);
+  console.log('Agreggated:', agreggatedData);
 
   histPlot(agreggatedData, { left: 30, right: 15, top: 50, bottom: 20 });
+  linePlot(agreggatedData, { left: 60, right: 15, top: 50, bottom: 20 });
   barPlot(agregatedByPaymentType, { left: 60, right: 15, top: 50, bottom: 20 });
 }
 
@@ -90,4 +91,17 @@ window.onload = async () => {
 
   document.getElementById('variable-select').addEventListener('change', loadCharts);
   document.getElementById('aggregation-select').addEventListener('change', loadCharts);
+  document.getElementById('reset-button').addEventListener('click', () => {
+    selectedIds.clear();
+    selectedHours.clear();
+    brushDates = { startDate: null, endDate: null };
+    loadMap(neighs, taxi, async (clickedLocationIdList) => {
+      selectedIds.clear();
+      clickedLocationIdList.forEach(id => selectedIds.add(id));
+      await loadFilters();
+      await loadCharts();
+    });
+    loadFilters();
+    loadCharts();
+  });
 };

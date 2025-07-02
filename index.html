@@ -7,7 +7,7 @@
 </head>
 <body>
   <div class="page-layout">
-    <!-- Botões a esquerda -->
+    <!-- Botões -->
     <div class="buttom-container">
       <label for="variable-select">Variável a analisar:</label>
       <select id="variable-select">
@@ -25,6 +25,7 @@
         <option value="AVG">Média</option>
         <option value="SUM">Soma</option>
       </select>
+      <button id="reset-button">Resetar filtros</button>
     </div>
 
     <div class="content-wrapper">
@@ -42,7 +43,7 @@
         </div>
       </div>
 
-      <!-- Gráfico horizontal -->
+      <!-- Filtro temporal -->
       <div class="bottom-layout">
         <svg id="bottom-chart-svg"><g id="bottom-chart"></g></svg>
         <svg id="side-svg"><g id="side-chart"></g></svg>
