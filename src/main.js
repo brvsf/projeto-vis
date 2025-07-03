@@ -62,7 +62,7 @@ async function loadCharts() {
     endDate,
     hours,
     variable,
-    'COUNT'
+    aggregation
   );
 
   console.log('Agreggated:', agreggatedData);

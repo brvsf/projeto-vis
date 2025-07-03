@@ -87,10 +87,11 @@ export function linePlot(data, margens = { left: 50, right: 50, top: 50, bottom:
   g.attr('transform', `translate(${margens.left}, ${margens.top})`);
 
   const parseDate = d3.timeParse('%Y-%m-%d');
+
   const filteredData = data
-  .map(d => ({ date: parseDate(d.date), value: +d.value }))
-  .filter(d => d.date && d.date.getFullYear() >= 2023 && !isNaN(d.value))
-  .sort((a, b) => d3.ascending(a.date, b.date));
+    .map(d => ({ date: parseDate(d.date), value: Number(d.value) }))
+    .filter(d => d.date && d.date.getFullYear() >= 2023 && !isNaN(d.value))
+    .sort((a, b) => d3.ascending(a.date, b.date));
 
   const xScale = d3.scaleTime()
     .domain(d3.extent(filteredData, d => d.date))
