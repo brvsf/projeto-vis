@@ -67,9 +67,9 @@ async function loadCharts() {
 
   console.log('Agreggated:', agreggatedData);
 
-  histPlot(agreggatedData, { left: 30, right: 15, top: 50, bottom: 20 });
-  linePlot(agreggatedData, { left: 60, right: 15, top: 50, bottom: 20 });
-  barPlot(agregatedByPaymentType, { left: 60, right: 15, top: 50, bottom: 20 });
+  histPlot(agreggatedData, { left: 30, right: 15, top: 20, bottom: 20 });
+  linePlot(agreggatedData, { left: 60, right: 15, top: 20, bottom: 20 });
+  barPlot(agregatedByPaymentType, { left: 60, right: 15, top: 20, bottom: 20 });
 }
 
 window.onload = async () => {
