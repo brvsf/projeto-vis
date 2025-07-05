@@ -10,7 +10,7 @@ export function histPlot(data, margens = { left: 50, right: 50, top: 50, bottom:
   }
 
   const bins = d3.bin()
-    .thresholds(40)
+    .thresholds(20)
     .value(d => Number(d.value))(data);
 
   const width = parseInt(d3.select(svg).style('width')) - margens.left - margens.right;
