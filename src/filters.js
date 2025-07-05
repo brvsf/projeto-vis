@@ -46,7 +46,7 @@ export function lineFilter(data, margens = { left: 50, right: 50, top: 50, botto
 
   const xAxis = d3.axisBottom(xScale)
     .tickValues(months)
-    .tickFormat(d => d.getMonth() + 1);
+    .tickFormat(d3.timeFormat('%b'))
 
   const yAxis = d3.axisLeft(yScale)
     .ticks(yMax < 10 ? yMax : 10)
@@ -58,13 +58,13 @@ export function lineFilter(data, margens = { left: 50, right: 50, top: 50, botto
       .attr('transform', `translate(0, ${height})`)
       .call(xAxis)
       .selectAll("text")
-      .attr("transform", "rotate(-45)")
+      .attr("transform", "rotate(-30)")
       .style("text-anchor", "end"),
     update => update
       .attr('transform', `translate(0, ${height})`)
       .call(xAxis)
       .selectAll("text")
-      .attr("transform", "rotate(-45)")
+      .attr("transform", "rotate(-30)")
       .style("text-anchor", "end")
   );
 

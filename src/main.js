@@ -34,7 +34,7 @@ async function loadFilters() {
   const locationFilter = Array.from(selectedIds);
 
   const countByDay = await taxi.queryInfoByDate(locationFilter);
-  lineFilter(countByDay, { left: 35, right: 15, top: 10, bottom: 20 }, onBrush);
+  lineFilter(countByDay, { left: 35, right: 15, top: 10, bottom: 25 }, onBrush);
 
   const hourData = await taxi.queryInfoByHour();
   donutFilter(hourData, onDonutClick, selectedHours);
@@ -64,8 +64,6 @@ async function loadCharts() {
     variable,
     aggregation
   );
-
-  console.log('Agreggated:', agreggatedData);
 
   histPlot(agreggatedData, { left: 30, right: 15, top: 20, bottom: 20 });
   linePlot(agreggatedData, { left: 60, right: 15, top: 20, bottom: 20 });
